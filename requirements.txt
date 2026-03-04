@@ -1,0 +1,37 @@
+# ═══════════════════════════════════════════════
+# mlops-platform dependencies
+# NOTE: ML frameworks (lightgbm, xgboost, etc.) are NOT listed here.
+#       They are bundled inside each model's pyfunc artifact in MLflow.
+#       The platform only needs mlflow to load and call models.
+# ═══════════════════════════════════════════════
+
+# Core
+mlflow>=2.10.0
+pandas>=2.1.0
+numpy>=1.26.0
+pyyaml>=6.0
+python-dotenv>=1.0.0
+
+# Database
+sqlalchemy>=2.0.0
+pymysql>=1.1.0
+
+# Evaluation (used by metrics.py — sklearn is the only ML lib the platform imports)
+scikit-learn>=1.3.0
+scipy>=1.11.0
+
+# Orchestration (installed in Airflow container, listed for reference)
+# apache-airflow>=2.9.0
+
+# Monitoring
+# evidently>=0.4.0  # Phase 3
+
+# Dashboard
+# streamlit>=1.30.0  # Phase 3
+
+# Alerting
+# slack-sdk>=3.27.0  # Phase 2
+
+# Dev / Testing
+# pytest>=8.0.0
+# ruff>=0.3.0

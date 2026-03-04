@@ -1,0 +1,85 @@
+# ═══════════════════════════════════════════════════════
+# Example: Fraud Detection — Team Alpha
+# This is a working example, not a real project.
+# Teams should copy templates/project_config_template.yaml instead.
+# ═══════════════════════════════════════════════════════
+
+project_id: fraud_detection_alpha
+display_name: "Fraud Detection - Team Alpha"
+owner: team-alpha
+contact: alice@company.com
+status: active
+
+model:
+  mlflow_name: "fraud_detection_alpha"
+  version: Production
+
+input:
+  source: mysql
+  connection:
+    host: ${MYSQL_HOST}
+    port: ${MYSQL_PORT}
+    user: ${MYSQL_USER}
+    password: ${MYSQL_PASS}
+    database: warehouse
+  query: |
+    SELECT txn_id, txn_date,
+           amount, merchant_risk, hour_of_day,
+           is_international, velocity_24h
+    FROM transactions
+    WHERE txn_date = '{run_date}'
+
+schema:
+  id_columns:
+    - txn_id
+    - txn_date
+  feature_columns:
+    - amount
+    - merchant_risk
+    - hour_of_day
+    - is_international
+    - velocity_24h
+  output_columns:
+    - fraud_probability
+
+output:
+  target_table: results.fraud_scores
+  write_mode: append
+  dedup_key: [txn_id, run_date]
+
+schedule:
+  cron: "0 8 * * *"
+  timezone: Asia/Singapore
+  timeout_minutes: 60
+  retries: 2
+
+evaluation:
+  metrics:
+    - auc_roc
+    - f1_macro
+    - precision_macro
+    - recall_macro
+    - ks_statistic
+  thresholds:
+    auc_roc: 0.80
+    f1_macro: 0.55
+  # ground_truth:
+  #   source: mysql
+  #   query: |
+  #     SELECT txn_id, confirmed_fraud
+  #     FROM fraud_labels
+  #     WHERE label_date = '{run_date}'
+  #   label_column: confirmed_fraud
+  #   lag_days: 14
+
+monitoring:
+  row_count_change_max_pct: 20
+  null_output_max_pct: 0
+  prediction_range:
+    fraud_probability: [0.0, 1.0]
+  drift:
+    enabled: false
+    psi_warn: 0.10
+    psi_critical: 0.25
+    reference: last_30_days
+  alert_channel: "#fraud-alerts"

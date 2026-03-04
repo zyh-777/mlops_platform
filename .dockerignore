@@ -1,0 +1,12 @@
+.git
+.gitignore
+.env
+__pycache__
+*.pyc
+.DS_Store
+airflow_logs
+logs
+.vscode
+.idea
+*.md
+tests

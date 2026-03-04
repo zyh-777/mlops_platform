@@ -1,0 +1,123 @@
+# ═══════════════════════════════════════════════════════
+# mlops-platform — Project Configuration Template
+# ═══════════════════════════════════════════════════════
+#
+# Fill in this file and place it in:
+#   project_registry/projects/<your_project_id>.yaml
+#
+# Then run validation:
+#   python -m tools.validate_project <your_project_id>
+#
+# Environment variables can be referenced as ${VAR_NAME}
+# ═══════════════════════════════════════════════════════
+
+project_id: your_project_id            # unique, snake_case, used everywhere
+display_name: "Your Model - Description"
+owner: your-team-name
+contact: your-email@company.com
+status: active                          # active | paused | retired
+
+# ── Model ────────────────────────────────────────────
+# Must match the registered_model_name in MLflow
+model:
+  mlflow_name: "your_project_id"        # registered model name in MLflow
+  version: Production                    # alias (Production/Candidate) or version number
+
+# ── Input Data ───────────────────────────────────────
+# Where does the platform read input data for your model?
+input:
+  source: mysql                          # mysql | s3 | api
+  connection:
+    host: ${MYSQL_HOST}
+    port: ${MYSQL_PORT}
+    user: ${MYSQL_USER}
+    password: ${MYSQL_PASS}
+    database: your_database
+  query: |
+    SELECT
+        id_col_1, id_col_2,
+        feature_1, feature_2, feature_3
+    FROM your_table
+    WHERE date_column = '{run_date}'
+
+  # ── For S3 sources, use instead: ──
+  # source: s3
+  # bucket: your-bucket
+  # key_template: "data/{run_date}/input.parquet"
+
+# ── Schema ───────────────────────────────────────────
+# Declare what columns exist and what goes where
+schema:
+  # Identifier columns — passed through to output, NOT fed to model
+  id_columns:
+    - id_col_1
+    - id_col_2
+
+  # Feature columns — extracted and fed to model.predict()
+  feature_columns:
+    - feature_1
+    - feature_2
+    - feature_3
+
+  # Output columns — what model.predict() returns
+  # Must match the DataFrame columns your pyfunc wrapper returns
+  output_columns:
+    - prediction_score
+
+# ── Output ───────────────────────────────────────────
+# Where does the platform write prediction results?
+output:
+  target_table: results.your_output_table
+  write_mode: append                     # append | replace_date
+  dedup_key: [id_col_1, run_date]        # prevents duplicate rows
+
+# ── Schedule ─────────────────────────────────────────
+# When does the pipeline run?
+schedule:
+  cron: "0 10 * * *"                     # cron expression
+  timezone: Asia/Singapore               # IANA timezone
+  timeout_minutes: 120
+  retries: 2
+
+# ── Evaluation ───────────────────────────────────────
+# Which metrics to compute when validating candidate models.
+# Also used for periodic quality checks when ground truth is available.
+#
+# Available metrics:
+#   Classification: auc_roc, f1_macro, f1_weighted, precision_macro,
+#                   recall_macro, accuracy, log_loss, ks_statistic, gini
+#   Regression:     mse, rmse, r2, mae
+#
+# Thresholds: minimum acceptable values for candidate promotion.
+#   (For loss metrics like mse/rmse/log_loss, threshold is the MAXIMUM.)
+evaluation:
+  metrics:
+    - auc_roc
+    - f1_macro
+    - precision_macro
+    - recall_macro
+  thresholds:                            # optional — for candidate validation gate
+    auc_roc: 0.75
+    f1_macro: 0.50
+  # ground_truth:                        # optional — for periodic quality monitoring
+  #   source: mysql
+  #   query: |
+  #     SELECT id_col_1, actual_label
+  #     FROM your_table
+  #     WHERE label_date = '{run_date}'
+  #   label_column: actual_label
+  #   lag_days: 30                        # ground truth available 30 days after prediction
+
+# ── Monitoring ───────────────────────────────────────
+# What should the platform watch for in daily runs?
+monitoring:
+  row_count_change_max_pct: 20           # alert if row count changes more than this %
+  null_output_max_pct: 0                 # alert if any output is NULL
+  prediction_range:                       # alert if values outside this range (optional)
+    prediction_score: [0.0, 1.0]
+  drift:
+    enabled: false                        # set to true after 1-2 months of baseline data
+    psi_warn: 0.10
+    psi_critical: 0.25
+    reference: last_30_days
+  alert_channel: "#your-team-alerts"     # Slack channel (optional)
