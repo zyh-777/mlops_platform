@@ -18,4 +18,4 @@ logs/
 data/
 mlflow.db
 mlruns/
-mlruns/
+mlartifacts/
