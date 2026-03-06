@@ -5,6 +5,7 @@ __pycache__/
 .vscode/
 .idea/
 .claude/
+CLAUDE.md
 *.swp
 *.egg-info/
 dist/

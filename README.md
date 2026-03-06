@@ -320,14 +320,3 @@ If not set, alerts are logged only (no external notifications).
 In MLflow UI: move the "Production" alias back to the previous version. Done.
 Next run uses the old model. No code changes, no redeployment.
 
----
-
-## Architecture Deep Dive
-
-See [`CLAUDE.md`](CLAUDE.md) for:
-- Detailed architecture rules
-- Pyfunc wrapper patterns (A, B, C)
-- Evaluation system design
-- Monitoring strategy (3 levels, 3 tiers)
-- Model lifecycle (candidate → production → rollback)
-- Coding conventions
