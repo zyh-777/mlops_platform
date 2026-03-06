@@ -108,7 +108,6 @@ Team retrains → registers new version → tags as "Candidate"
 
 ```
 mlops-platform/
-├── CLAUDE.md                          ← Detailed architecture doc (for AI + humans)
 ├── README.md                          ← You are here
 ├── .env.example                       ← Environment config template
 ├── requirements.txt                   ← Python dependencies
