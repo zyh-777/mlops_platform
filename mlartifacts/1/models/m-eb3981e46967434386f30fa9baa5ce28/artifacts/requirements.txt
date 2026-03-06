@@ -1,0 +1,4 @@
+mlflow==3.10.0
+lightgbm>=4.0
+pandas
+numpy

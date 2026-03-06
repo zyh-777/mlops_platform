@@ -1,0 +1,23 @@
+artifact_path: mlflow-artifacts:/1/models/m-eb3981e46967434386f30fa9baa5ce28/artifacts
+flavors:
+  python_function:
+    artifacts:
+      lgb_model:
+        path: artifacts/credit_risk_us.lgb
+        uri: /tmp/credit_risk_us.lgb
+    cloudpickle_version: 3.0.0
+    code: null
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.pyfunc.model
+    python_model: python_model.pkl
+    python_version: 3.13.5
+    streamable: false
+mlflow_version: 3.10.0
+model_id: m-eb3981e46967434386f30fa9baa5ce28
+model_size_bytes: 706774
+model_uuid: m-eb3981e46967434386f30fa9baa5ce28
+prompts: null
+run_id: 7224e82099914cdf8f144133d0975670
+utc_time_created: '2026-03-06 03:05:46.640715'

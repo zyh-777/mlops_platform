@@ -1,0 +1,31 @@
+# ═══════════════════════════════════════════════════════
+# Dev setup: MLflow + MySQL for local testing
+# Usage:
+#   docker compose -f docker-compose.dev.yaml up -d
+#   open http://localhost:5000   ← MLflow UI
+# ═══════════════════════════════════════════════════════
+
+services:
+
+  mysql:
+    image: mariadb:11
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: mlops
+      MYSQL_PASSWORD: mlops123
+      MYSQL_DATABASE: platform
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 5s
+      retries: 10
+    restart: always
+
+  # MLflow runs locally (not in Docker) to avoid artifact path issues.
+  # Start it with: mlflow server --host 0.0.0.0 --port 5000
+
+volumes:
+  mysql-data:

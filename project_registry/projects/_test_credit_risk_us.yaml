@@ -1,0 +1,90 @@
+# ═══════════════════════════════════════════════════════
+# Test config: PD Model — US Credit Risk
+#
+# Data source: MySQL (features.pd_input)
+#   - Loaded from pd_input.csv by: python -m tools.load_csv_to_mysql
+#   - In production, DE team maintains this table
+#
+# Model: LightGBM wrapped as pyfunc
+#   - Trained & registered by: python -m tools.train_and_register
+#   - In production, data science team handles training
+#
+# Prefix '_' so Airflow skips it.
+# ═══════════════════════════════════════════════════════
+
+project_id: credit_risk_us
+display_name: "PD Model - US Credit Risk"
+owner: risk-team
+contact: yihang@company.com
+status: active
+
+model:
+  mlflow_name: "credit_risk_us"
+  version: Production
+
+input:
+  source: mysql
+  connection:
+    database: features
+  query: |
+    SELECT * FROM pd_input LIMIT 50000
+
+schema:
+  id_columns:
+    - Company_Number
+    - year
+    - month
+
+  feature_columns:
+    - StkIndx
+    - STInt
+    - dtdlevel
+    - dtdtrend
+    - liqnonfinlevel
+    - liqnonfintrend
+    - ni2talevel
+    - ni2tatrend
+    - sizelevel
+    - sizetrend
+    - m2b
+    - sigma
+    - liqfinlevel
+    - lqfintrend
+    - DTDmedianFin
+    - DTDmedianNonFin
+    - "dummyfin/SOE"
+
+  output_columns:
+    - pd_1y
+
+output:
+  target_table: results.pd_daily_us
+  write_mode: replace_date
+  dedup_key: [Company_Number, run_date]
+
+schedule:
+  cron: "0 10 * * *"
+  timezone: America/New_York
+  timeout_minutes: 120
+  retries: 2
+
+evaluation:
+  metrics:
+    - auc_roc
+    - ks_statistic
+    - gini
+  thresholds:
+    auc_roc: 0.70
+    ks_statistic: 0.30
+
+monitoring:
+  row_count_change_max_pct: 30
+  null_output_max_pct: 5
+  prediction_range:
+    pd_1y: [0.0, 1.0]
+  drift:
+    enabled: false
+    psi_warn: 0.10
+    psi_critical: 0.25
+    reference: last_30_days
+  alert_channel: "#risk-alerts"
